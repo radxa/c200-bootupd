@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+
+# Based on https://github.com/NVIDIA/edk2-nvidia/wiki/Build-with-docker#configure-docker
+
+# Point to the Ubuntu-22 dev image
+export EDK2_DEV_IMAGE="ghcr.io/tianocore/containers/ubuntu-22-dev:latest"
+
+# Required
+export EDK2_USER_ARGS="-v ${HOME}:${HOME} -e EDK2_DOCKER_USER_HOME=${HOME}"
+
+# Required, unless you want to build in your home directory.
+# Change "/build" to be a suitable build root on your system.
+export EDK2_BUILD_ROOT="$PWD"
+export EDK2_BUILDROOT_ARGS="-v ${EDK2_BUILD_ROOT}:${EDK2_BUILD_ROOT}"
+
+# Launch EDK2 docker
+docker run -it --rm -w "$PWD" ${EDK2_BUILDROOT_ARGS} ${EDK2_USER_ARGS} "${EDK2_DEV_IMAGE}" "$@"

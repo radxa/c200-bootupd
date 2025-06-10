@@ -1,0 +1,186 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Tue, 10 Jun 2025 14:25:02 +0800
+Subject: [PATCH] feat: support booting official Nvidia SD card image
+
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
+---
+ .../TegraPlatformBootManagerDxe.c             | 123 ++++++++++++++++++
+ .../TegraPlatformBootManagerDxe.inf           |   1 +
+ 2 files changed, 124 insertions(+)
+
+diff --git a/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c b/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
+index aebc3622..2a1e2ed0 100644
+--- a/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
++++ b/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
+@@ -16,11 +16,13 @@
+ #include <Library/UefiBootServicesTableLib.h>
+ #include <Library/UefiRuntimeServicesTableLib.h>
+ #include <libfdt.h>
++#include <Library/MemoryAllocationLib.h>
+ 
+ #include <Protocol/PlatformBootManager.h>
+ #include <Protocol/PciIo.h>
+ #include <Protocol/KernelCmdLineUpdate.h>
+ #include <Protocol/AndroidBootImg.h>
++#include <Protocol/PartitionInfo.h>
+ 
+ #include <NVIDIAConfiguration.h>
+ 
+@@ -435,6 +437,67 @@ RemoveKernelCommandLine (
+   }
+ }
+ 
++// From c200/edk2/ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.c
++/**
++  Function to get all handles that support a given protocol or all handles.
++
++  @param[in] ProtocolGuid The guid of the protocol to get handles for.  If NULL
++                          then the function will return all handles.
++
++  @retval NULL            A memory allocation failed.
++  @return                 A NULL terminated list of handles.
++**/
++EFI_HANDLE *
++EFIAPI
++GetHandleListByProtocol (
++  IN CONST EFI_GUID  *ProtocolGuid OPTIONAL
++  )
++{
++  EFI_HANDLE  *HandleList;
++  UINTN       Size;
++  EFI_STATUS  Status;
++
++  Size       = 0;
++  HandleList = NULL;
++
++  //
++  // We cannot use LocateHandleBuffer since we need that NULL item on the ends of the list!
++  //
++  if (ProtocolGuid == NULL) {
++    Status = gBS->LocateHandle (AllHandles, NULL, NULL, &Size, HandleList);
++    if (Status == EFI_BUFFER_TOO_SMALL) {
++      HandleList = AllocateZeroPool (Size + sizeof (EFI_HANDLE));
++      if (HandleList == NULL) {
++        return (NULL);
++      }
++
++      Status                               = gBS->LocateHandle (AllHandles, NULL, NULL, &Size, HandleList);
++      HandleList[Size/sizeof (EFI_HANDLE)] = NULL;
++    }
++  } else {
++    Status = gBS->LocateHandle (ByProtocol, (EFI_GUID *)ProtocolGuid, NULL, &Size, HandleList);
++    if (Status == EFI_BUFFER_TOO_SMALL) {
++      HandleList = AllocateZeroPool (Size + sizeof (EFI_HANDLE));
++      if (HandleList == NULL) {
++        return (NULL);
++      }
++
++      Status                               = gBS->LocateHandle (ByProtocol, (EFI_GUID *)ProtocolGuid, NULL, &Size, HandleList);
++      HandleList[Size/sizeof (EFI_HANDLE)] = NULL;
++    }
++  }
++
++  if (EFI_ERROR (Status)) {
++    if (HandleList != NULL) {
++      FreePool (HandleList);
++    }
++
++    return (NULL);
++  }
++
++  return (HandleList);
++}
++
+ /*
+   Update kernel command line.
+ 
+@@ -498,6 +561,10 @@ UpdateKernelCommandLine (
+     }
+   }
+ 
++  // We will remove "root=/dev/mmcblk",
++  // so there is enough space for our custom root argument
++  Length += StrSize(L"root=PARTUUID=00000000-0000-0000-0000-000000000000");
++
+   Status = gBS->AllocatePool (
+                   EfiBootServicesData,
+                   Length,
+@@ -550,6 +617,62 @@ UpdateKernelCommandLine (
+     }
+   }
+ 
++  if (StrStr (CmdLine, L"root=/dev/mmcblk") != NULL) {
++    ErrorPrint (L"%a: Found invalid mmcblk rootfs argument.\r\n", __FUNCTION__);
++    ErrorPrint (L"%a: Are you using Nvidia microSD system image?\r\n", __FUNCTION__);
++
++    EFI_HANDLE                  *HandleList = NULL;
++    EFI_HANDLE                  *NextPartition = NULL;
++    EFI_PARTITION_INFO_PROTOCOL *PartitionInfo = NULL;
++    HandleList  = GetHandleListByProtocol (&gEfiPartitionInfoProtocolGuid);
++    if (HandleList == NULL) {
++      DEBUG ((DEBUG_ERROR, "%a: Unable to get EfiPartitionInfoProtocol handles.\r\n", __FUNCTION__));
++    } else {
++      for (NextPartition = HandleList; *NextPartition != NULL; NextPartition++) {
++        DEBUG ((DEBUG_ERROR, "%a: Found EfiPartitionInfoProtocol handle: 0x%X\r\n", __FUNCTION__, NextPartition));
++        Status = gBS->HandleProtocol (
++                        *NextPartition,
++                        &gEfiPartitionInfoProtocolGuid,
++                        (VOID **)&PartitionInfo
++                        );
++
++        if (EFI_ERROR (Status)) {
++          DEBUG ((DEBUG_ERROR, "%a: Unable to get PartitionInfo (%r). Skip.\r\n", __FUNCTION__, Status));
++          continue;
++        }
++        if (PartitionInfo->Type != PARTITION_TYPE_GPT) {
++          DEBUG ((DEBUG_ERROR, "%a: Not a GPT partition. Skip.\r\n", __FUNCTION__));
++          continue;
++        }
++        if (StrCmp (PartitionInfo->Info.Gpt.PartitionName, L"APP") != 0) {
++          DEBUG ((DEBUG_ERROR, "%a: PartitionName '%s', not 'APP'. Skip.\r\n", __FUNCTION__, PartitionInfo->Info.Gpt.PartitionName));
++          continue;
++        }
++        ErrorPrint (L"%a: Patching root with the first APP partition found.\r\n", __FUNCTION__);
++
++        CHAR16 UniquePartitionGUID[37] = {};
++        UnicodeSPrint (UniquePartitionGUID, sizeof (UniquePartitionGUID), L"%g", &PartitionInfo->Info.Gpt.UniquePartitionGUID);
++
++        for (CHAR16 *TmpStr = UniquePartitionGUID; *TmpStr != L'\0' && TmpStr != &UniquePartitionGUID[36]; TmpStr++) {
++          if ((*TmpStr >= L'A') && (*TmpStr <= L'Z')) {
++            *TmpStr = (CHAR16)(*TmpStr - L'A' + L'a');
++          }
++        }
++
++        ErrorPrint (L"%a: root=PARTUUID=%s\r\n", __FUNCTION__, UniquePartitionGUID);
++
++        RemoveKernelCommandLine (CmdLine, L"root=/dev/mmcblk");
++        UnicodeSPrint (CmdLine, Length, L"%s root=PARTUUID=%s", CmdLine, UniquePartitionGUID);
++        break;
++      }
++      if (*NextPartition == NULL) {
++        ErrorPrint (L"%a: No APP partition was found.\r\n", __FUNCTION__);
++        ErrorPrint (L"%a: System may not be bootable!\r\n", __FUNCTION__);
++      }
++      FreePool (HandleList);
++    }
++  }
++
+   *OutCmdLine = CmdLine;
+   return EFI_SUCCESS;
+ }
+diff --git a/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.inf b/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.inf
+index eb627388..9f11651b 100644
+--- a/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.inf
++++ b/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.inf
+@@ -39,6 +39,7 @@
+   gEfiFirmwareVolume2ProtocolGuid
+   gEdkiiPlatformBootManagerProtocolGuid
+   gAndroidBootImgProtocolGuid
++  gEfiPartitionInfoProtocolGuid
+ 
+ [Guids]
+   gFdtTableGuid
+-- 
+2.49.0
+
