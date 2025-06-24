@@ -60,3 +60,13 @@ distclean: clean
 	./edk2_docker edkrepo clean
 	./edk2_docker edkrepo manifest-repos remove nvidia
 	rm -rf c200/ Linux_for_Tegra Jetson_Linux_R36.4.3_aarch64.tbz2
+
+Linux_for_Tegra/source/kernel/kernel-jammy-src/Makefile:
+	cd Linux_for_Tegra/source/ && \
+	./source_sync.sh -k jetson_36.4.3
+
+dtbs:
+	$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs
+
+dtbs-clean:
+	$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs-clean

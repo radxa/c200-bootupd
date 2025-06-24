@@ -27,6 +27,10 @@ This means the following changes are required to boot unmodified NVIDIA SD card 
 
 Please check [the official NVIDIA build guide](https://github.com/NVIDIA/edk2-nvidia/wiki/Build-with-docker#install-docker).
 
+Additionally, the Linux kernel header should be installed on your system.
+
+NixOS users can run `nix develop` (Flake required) to have a local shell with Linux header configured.
+
 ### Build
 
 Please run following commands:
