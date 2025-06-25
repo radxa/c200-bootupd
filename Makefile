@@ -48,11 +48,11 @@ Linux_for_Tegra/bootloader/uefi_jetson.bin: c200/images/uefi_Jetson_$(VARIANT).b
 Linux_for_Tegra/bootloader/uefi_jetson_minimal.bin: c200/images/uefi_JetsonMinimal_$(VARIANT).bin
 	cp $< $@
 
-flash: Linux_for_Tegra/bootloader/$(BOOTLOADER) Linux_for_Tegra/flash.sh
+flash: Linux_for_Tegra/bootloader/$(BOOTLOADER) Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb Linux_for_Tegra/flash.sh
 	cd Linux_for_Tegra && \
 	sudo ./flash.sh -k A_cpu-bootloader p3768-0000-p3767-0000-a0-qspi internal
 
-flash_spi: Linux_for_Tegra/bootloader/$(BOOTLOADER) Linux_for_Tegra/flash.sh
+flash_spi: Linux_for_Tegra/bootloader/$(BOOTLOADER) Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb Linux_for_Tegra/flash.sh
 	cd Linux_for_Tegra && \
 	sudo ./flash.sh p3768-0000-p3767-0000-a0-qspi internal
 
