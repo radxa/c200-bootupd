@@ -47,6 +47,7 @@ First, boot the device to [force recovery mode](https://developer.nvidia.com/emb
 
 ```
 make flash
+# Other products can be specified with PRODUCT variable
 ```
 
 Please be aware that this only updates the EDK2 part of the QSPI firmware.  

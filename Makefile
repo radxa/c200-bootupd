@@ -1,5 +1,8 @@
 .PHONY: all build flash flash_spi clean distclean
 
+PRODUCT ?= c200
+# or airbox-orin
+
 PROFILE ?= Jetson
 # or JetsonMinimal
 
@@ -35,7 +38,7 @@ build: $(BUILD_OUTPUT)
 Jetson_Linux_R36.4.3_aarch64.tbz2:
 	wget https://developer.download.nvidia.com/embedded/L4T/r36_Release_v4.3/release/$@
 
-Linux_for_Tegra/flash.sh: Jetson_Linux_R36.4.3_aarch64.tbz2
+Linux_for_Tegra/flash.sh Linux_for_Tegra/source/source_sync.sh &: Jetson_Linux_R36.4.3_aarch64.tbz2
 	tar xmf $<
 
 .PHONY: Linux_for_Tegra/bootloader/uefi_jetson.bin
@@ -55,18 +58,22 @@ flash_spi: Linux_for_Tegra/bootloader/$(BOOTLOADER) Linux_for_Tegra/flash.sh
 
 clean:
 	rm -f c200/images/uefi_Jetson*_*.bin
+	[ -e Linux_for_Tegra/source/Makefile ] && \
+		$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs-clean
 
 distclean: clean
 	./edk2_docker edkrepo clean
 	./edk2_docker edkrepo manifest-repos remove nvidia
 	rm -rf c200/ Linux_for_Tegra Jetson_Linux_R36.4.3_aarch64.tbz2
 
-Linux_for_Tegra/source/kernel/kernel-jammy-src/Makefile:
+Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts: Linux_for_Tegra/source/source_sync.sh
 	cd Linux_for_Tegra/source/ && \
 	./source_sync.sh -k jetson_36.4.3
+	cd Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public && git am ../../../../../../patches/t23x-public-dts/$(PRODUCT)/*
 
-dtbs:
+Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv.dtb: Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
 	$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs
 
-dtbs-clean:
-	$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs-clean
+.PHONY: Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb
+Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb: Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv.dtb
+	cp $< $@
