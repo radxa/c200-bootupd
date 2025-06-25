@@ -36,8 +36,7 @@ Jetson_Linux_R36.4.3_aarch64.tbz2:
 	wget https://developer.download.nvidia.com/embedded/L4T/r36_Release_v4.3/release/$@
 
 Linux_for_Tegra/flash.sh: Jetson_Linux_R36.4.3_aarch64.tbz2
-	tar xf $<
-	touch $@
+	tar xmf $<
 
 .PHONY: Linux_for_Tegra/bootloader/uefi_jetson.bin
 Linux_for_Tegra/bootloader/uefi_jetson.bin: c200/images/uefi_Jetson_$(VARIANT).bin
