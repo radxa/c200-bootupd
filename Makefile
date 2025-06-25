@@ -19,8 +19,9 @@ endif
 all: build
 
 c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c &:
+	rm -rf c200
 	./edk2_docker init_edkrepo_conf
-	./edk2_docker edkrepo manifest-repos add nvidia https://github.com/NVIDIA/edk2-edkrepo-manifest.git main nvidia
+	./edk2_docker edkrepo manifest-repos add nvidia https://github.com/NVIDIA/edk2-edkrepo-manifest.git main nvidia || true
 	./edk2_docker edkrepo clone c200 NVIDIA-Platforms r36.4.3
 	cd c200/edk2-nvidia && git am --keep-cr ../../patches/edk2-nvidia/*
 
