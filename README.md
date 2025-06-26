@@ -1,8 +1,8 @@
-# Custom EDK2 for Radxa Orin C200
+# Custom EDK2 for Radxa Orin Nano products
 
-This instruction is only needed if you want to factory reset the SPI flash on the C200's included NVIDIA Jetson Orin Nano module.
+This instruction is only needed if you want to factory reset the SPI flash on the Radxa Orin Nano product's included NVIDIA Jetson Orin Nano module.
 
-Radxa Orin C200 is factory flashed with a custom EDK2, that can support booting official NVIDIA Jetson Orin Nano SD card image on other storage mediums. Tested with:
+Radxa Orin Nano products are factory flashed with a custom EDK2, that can support booting official NVIDIA Jetson Orin Nano SD card image on other storage mediums. Tested with:
 
 * USB storage device
 * M.2 NVMe SSD
@@ -10,6 +10,8 @@ Radxa Orin C200 is factory flashed with a custom EDK2, that can support booting 
 When using the official SD card image, the custom EDK2 will try finding the first `APP` partition as the rootfs. This means you should not connect multiple storage devices with the official image flashed on it, as the system may not use the correct rootfs partition to boot.
 
 ## Background
+
+### Radxa Orin C200
 
 NVIDIA Jetson Orin Nano Developer Kit (NDK) has the following hardware difference when compared to Radxa Orin C200:
 
@@ -20,6 +22,15 @@ Additionally, there is no SDMMC signal exposed on the Jetson SODIMM connector. H
 This means the following changes are required to boot unmodified NVIDIA SD card image on other mediums:
 
 * EDK2 should patch kernel cmdline if it detects the invalid rootfs.
+
+### Radxa Airbox Orin
+
+Radxa Airbox Orin has some additional changes compared to Radxa Orin C200:
+
+* USB 3.0 hub is gone. Both USB 3.0 Type-A ports are connected directly to the module.
+* GPIO01, GPIO04, and GPIO11 are connected to a RGB LED.
+
+The embedded device tree and MB1 BCT Pinmux have been updated to support those features.
 
 ## Development
 
