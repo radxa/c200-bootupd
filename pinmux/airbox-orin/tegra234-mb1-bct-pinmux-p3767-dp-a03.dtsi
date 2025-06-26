@@ -812,9 +812,9 @@
 			soc_gpio32_pq5 {
 				nvidia,pins = "soc_gpio32_pq5";
 				nvidia,function = "rsvd0";
-				nvidia,pull = <TEGRA_PIN_PULL_UP>;
-				nvidia,tristate = <TEGRA_PIN_ENABLE>;
-				nvidia,enable-input = <TEGRA_PIN_ENABLE>;
+				nvidia,pull = <TEGRA_PIN_PULL_NONE>;
+				nvidia,tristate = <TEGRA_PIN_DISABLE>;
+				nvidia,enable-input = <TEGRA_PIN_DISABLE>;
 				nvidia,io-high-voltage = <TEGRA_PIN_DISABLE>;
 				nvidia,lpdr = <TEGRA_PIN_DISABLE>;
 			};
@@ -822,9 +822,9 @@
 			soc_gpio33_pq6 {
 				nvidia,pins = "soc_gpio33_pq6";
 				nvidia,function = "rsvd0";
-				nvidia,pull = <TEGRA_PIN_PULL_UP>;
-				nvidia,tristate = <TEGRA_PIN_ENABLE>;
-				nvidia,enable-input = <TEGRA_PIN_ENABLE>;
+				nvidia,pull = <TEGRA_PIN_PULL_NONE>;
+				nvidia,tristate = <TEGRA_PIN_DISABLE>;
+				nvidia,enable-input = <TEGRA_PIN_DISABLE>;
 				nvidia,io-high-voltage = <TEGRA_PIN_DISABLE>;
 				nvidia,lpdr = <TEGRA_PIN_DISABLE>;
 			};

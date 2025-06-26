@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Wed, 25 Jun 2025 15:09:15 +0800
+Subject: [PATCH] t23x: airbox-orin: enable top USB 3
+
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
+---
+ .../tegra234-p3768-0000+p3767-0005-nv.dts     | 30 +++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts b/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
+index 5cffe5e..5a32fcb 100644
+--- a/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
++++ b/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
+@@ -23,5 +23,35 @@
+ 				status = "disabled";
+ 			};
+ 		};
++
++		padctl@3520000 {
++			pads {
++				usb3 {
++					lanes {
++						usb3-2 {
++							nvidia,function = "xusb";
++							status = "okay";
++						};
++					};
++				};
++			};
++			ports {
++				usb3-2 {
++					nvidia,usb2-companion = <2>;
++					status = "okay";
++				};
++			};
++		};
++
++		usb@3610000 {
++			phys = <&{/bus@0/padctl@3520000/pads/usb2/lanes/usb2-0}>,
++			       <&{/bus@0/padctl@3520000/pads/usb2/lanes/usb2-1}>,
++			       <&{/bus@0/padctl@3520000/pads/usb2/lanes/usb2-2}>,
++			       <&{/bus@0/padctl@3520000/pads/usb3/lanes/usb3-0}>,
++			       <&{/bus@0/padctl@3520000/pads/usb3/lanes/usb3-1}>,
++			       <&{/bus@0/padctl@3520000/pads/usb3/lanes/usb3-2}>;
++			phy-names = "usb2-0", "usb2-1", "usb2-2", "usb3-0",
++				    "usb3-1", "usb3-2";
++		};
+ 	};
+ };
+-- 
+2.49.0
+

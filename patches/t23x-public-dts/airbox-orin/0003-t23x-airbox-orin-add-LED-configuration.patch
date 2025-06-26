@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Thu, 26 Jun 2025 13:52:51 +0800
+Subject: [PATCH] t23x: airbox-orin: add LED configuration
+
+Pinmux needs to be updated to allow output on GPIO01 and GPIO11.
+
+Potential reason for pinmux issue:
+https://forums.developer.nvidia.com/t/gpio/336033/14?u=yt13
+
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
+---
+ .../tegra234-p3768-0000+p3767-0005-nv.dts     | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts b/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
+index 5a32fcb..11d8802 100644
+--- a/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
++++ b/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
+@@ -54,4 +54,23 @@
+ 				    "usb3-1", "usb3-2";
+ 		};
+ 	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++
++		power-led {		// Blue
++			gpios = <&gpio_aon TEGRA234_AON_GPIO(CC, 1) GPIO_ACTIVE_HIGH>; // GPIO04
++			linux,default-trigger = "default-on";
++		};
++
++		status-led {	// Green
++			gpios = <&gpio TEGRA234_MAIN_GPIO(Q, 5) GPIO_ACTIVE_HIGH>; // GPIO01
++			linux,default-trigger = "heartbeat";
++		};
++
++		user-led {		// Red
++			gpios = <&gpio TEGRA234_MAIN_GPIO(Q, 6) GPIO_ACTIVE_HIGH>; // GPIO11
++			linux,default-trigger = "none";
++		};
++	};
+ };
+-- 
+2.49.0
+
