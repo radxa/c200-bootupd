@@ -57,6 +57,10 @@ flash: build Linux_for_Tegra/flash.sh
 	cd Linux_for_Tegra && \
 	sudo ./flash.sh -k A_cpu-bootloader p3768-0000-p3767-0000-a0-qspi internal
 
+flash_bct: build Linux_for_Tegra/flash.sh
+	cd Linux_for_Tegra && \
+	sudo ./flash.sh -k A_MB1_BCT p3768-0000-p3767-0000-a0-qspi internal
+
 flash_spi: build Linux_for_Tegra/flash.sh
 	cd Linux_for_Tegra && \
 	sudo ./flash.sh p3768-0000-p3767-0000-a0-qspi internal

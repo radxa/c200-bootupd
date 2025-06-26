@@ -46,14 +46,16 @@ The generated binary is located under `c200/images/uefi_Jetson_RELEASE.bin`.
 First, boot the device to [force recovery mode](https://developer.nvidia.com/embedded/learn/jetson-agx-orin-devkit-user-guide/howto.html#force-recovery-mode). Then run following commands:
 
 ```
+# Update EDK2
 make flash
+
+# Pinmux needs to be updated for Airbox Orin's status LED
+make flash_bct
+
 # Other products can be specified with PRODUCT variable
 ```
 
-Please be aware that this only updates the EDK2 part of the QSPI firmware.  
-The custom device tree requires different pinmux configuration, which is not part of the EDK2.
-
-If you want to completely update the whole SPI, please run:
+If you want to update the entire SPI flash, please run:
 
 ```
 make flash_spi
