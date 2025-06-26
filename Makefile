@@ -80,7 +80,7 @@ Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768
 	./source_sync.sh -k jetson_36.4.3
 	cd Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public && git am ../../../../../../patches/t23x-public-dts/$(PRODUCT)/*
 
-Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv.dtb: Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
+Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv.dtb: Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-dcb-p3737-0000-p3701-0000.dtsi  Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
 	$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs
 
 .PHONY: Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb
@@ -97,4 +97,8 @@ Linux_for_Tegra/bootloader/tegra234-mb1-bct-gpio-p3767-dp-a03.dtsi: pinmux/$(PRO
 
 .PHONY: Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi
 Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi: pinmux/$(PRODUCT)/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi
+	cp $< $@
+
+.PHONY: Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-dcb-p3737-0000-p3701-0000.dtsi
+Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-dcb-p3737-0000-p3701-0000.dtsi: pinmux/$(PRODUCT)/tegra234-dcb-p3737-0000-p3701-0000.dtsi
 	cp $< $@
