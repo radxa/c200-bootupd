@@ -33,7 +33,12 @@ $(BUILD_OUTPUT): c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-
 	../edk2_docker edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh \
 		--init-defconfig edk2-nvidia/Platform/NVIDIA/$(PROFILE)/Jetson.defconfig
 
-build: $(BUILD_OUTPUT)
+build: $(BUILD_OUTPUT) \
+Linux_for_Tegra/bootloader/$(BOOTLOADER) \
+Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb \
+Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-pinmux-p3767-dp-a03.dtsi \
+Linux_for_Tegra/bootloader/tegra234-mb1-bct-gpio-p3767-dp-a03.dtsi \
+Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi
 
 Jetson_Linux_R36.4.3_aarch64.tbz2:
 	wget https://developer.download.nvidia.com/embedded/L4T/r36_Release_v4.3/release/$@
@@ -48,11 +53,11 @@ Linux_for_Tegra/bootloader/uefi_jetson.bin: c200/images/uefi_Jetson_$(VARIANT).b
 Linux_for_Tegra/bootloader/uefi_jetson_minimal.bin: c200/images/uefi_JetsonMinimal_$(VARIANT).bin
 	cp $< $@
 
-flash: Linux_for_Tegra/bootloader/$(BOOTLOADER) Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb Linux_for_Tegra/flash.sh
+flash: build Linux_for_Tegra/flash.sh
 	cd Linux_for_Tegra && \
 	sudo ./flash.sh -k A_cpu-bootloader p3768-0000-p3767-0000-a0-qspi internal
 
-flash_spi: Linux_for_Tegra/bootloader/$(BOOTLOADER) Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb Linux_for_Tegra/flash.sh
+flash_spi: build Linux_for_Tegra/flash.sh
 	cd Linux_for_Tegra && \
 	sudo ./flash.sh p3768-0000-p3767-0000-a0-qspi internal
 
@@ -76,4 +81,16 @@ Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3
 
 .PHONY: Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb
 Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb: Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv.dtb
+	cp $< $@
+
+.PHONY: Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-pinmux-p3767-dp-a03.dtsi
+Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-pinmux-p3767-dp-a03.dtsi: pinmux/$(PRODUCT)/tegra234-mb1-bct-pinmux-p3767-dp-a03.dtsi
+	cp $< $@
+
+.PHONY: Linux_for_Tegra/bootloader/tegra234-mb1-bct-gpio-p3767-dp-a03.dtsi
+Linux_for_Tegra/bootloader/tegra234-mb1-bct-gpio-p3767-dp-a03.dtsi: pinmux/$(PRODUCT)/tegra234-mb1-bct-gpio-p3767-dp-a03.dtsi
+	cp $< $@
+
+.PHONY: Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi
+Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi: pinmux/$(PRODUCT)/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi
 	cp $< $@

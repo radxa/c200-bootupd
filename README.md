@@ -51,6 +51,8 @@ make flash
 ```
 
 Please be aware that this only updates the EDK2 part of the QSPI firmware.  
+The custom device tree requires different pinmux configuration, which is not part of the EDK2.
+
 If you want to completely update the whole SPI, please run:
 
 ```
