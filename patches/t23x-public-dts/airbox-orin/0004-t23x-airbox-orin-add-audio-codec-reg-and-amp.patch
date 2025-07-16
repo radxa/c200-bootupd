@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Zhaoming Luo <luozhaoming@radxa.com>
+Date: Thu, 17 Jul 2025 11:06:08 +0800
+Subject: [PATCH] t23x: airbox-orin: add audio codec reg and amp
+
+Pinmux needs to be updated to allow output on GPIO09 and GPIO13.
+
+Signed-off-by: Zhaoming Luo <luozhaoming@radxa.com>
+---
+ nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts b/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
+index 11d8802..2bb5987 100644
+--- a/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
++++ b/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
+@@ -73,4 +73,19 @@
+ 			linux,default-trigger = "none";
+ 		};
+ 	};
++
++	vdd-usb-audio {
++		compatible = "regulator-fixed";
++		regulator-name = "vdd_usb_audio";
++		gpio = <&gpio TEGRA234_MAIN_GPIO(AC, 6) GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		regulator-always-on;
++		vin-supply = <&vdd_5v0_sys>;
++	};
++
++	analog-amplifier {
++		compatible = "simple-audio-amplifier";
++		VCC-supply = <&vdd_5v0_sys>;
++		enable-gpios = <&gpio TEGRA234_MAIN_GPIO(H, 0) GPIO_ACTIVE_HIGH>;
++	};
+ };
+-- 
+2.39.5
+
