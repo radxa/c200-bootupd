@@ -29,6 +29,8 @@ Radxa Airbox Orin has some additional changes compared to Radxa Orin C200:
 
 * USB 3.0 hub is gone. Both USB 3.0 Type-A ports are connected directly to the module.
 * GPIO01, GPIO04, and GPIO11 are connected to a RGB LED.
+* GPIO09 enables the USB sound card.
+* GPIO13 enables the speaker amplifier.
 
 The embedded device tree and MB1 BCT Pinmux have been updated to support those features.
 
