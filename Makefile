@@ -35,7 +35,7 @@ $(BUILD_OUTPUT): c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-
 
 build: $(BUILD_OUTPUT) \
 Linux_for_Tegra/bootloader/$(BOOTLOADER) \
-Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb \
+Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv-super.dtb \
 Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-pinmux-p3767-dp-a03.dtsi \
 Linux_for_Tegra/bootloader/tegra234-mb1-bct-gpio-p3767-dp-a03.dtsi \
 Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi
@@ -55,7 +55,7 @@ Linux_for_Tegra/bootloader/uefi_jetson_minimal.bin: c200/images/uefi_JetsonMinim
 
 flash: build Linux_for_Tegra/flash.sh
 	cd Linux_for_Tegra && \
-	sudo ./flash.sh -k A_cpu-bootloader p3768-0000-p3767-0000-a0-qspi internal
+	sudo ./flash.sh --qspi-only -k A_cpu-bootloader jetson-orin-nano-devkit-super internal
 
 flash_bct: build Linux_for_Tegra/flash.sh
 	cd Linux_for_Tegra && \
@@ -75,7 +75,7 @@ distclean: clean
 	./edk2_docker edkrepo manifest-repos remove nvidia
 	rm -rf c200/ Linux_for_Tegra Jetson_Linux_R36.4.3_aarch64.tbz2
 
-Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts: Linux_for_Tegra/source/source_sync.sh
+Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv-super.dts: Linux_for_Tegra/source/source_sync.sh
 	cd Linux_for_Tegra/source/ && \
 	./source_sync.sh -k jetson_36.4.3
 	if [ -d patches/t23x-public-dts/$(PRODUCT) ]; then \
@@ -83,11 +83,11 @@ Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768
 		git am ../../../../../../patches/t23x-public-dts/$(PRODUCT)/*; \
 	fi
 
-Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv.dtb: Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-dcb-p3737-0000-p3701-0000.dtsi  Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv.dts
+Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv-super.dtb: Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-dcb-p3737-0000-p3701-0000.dtsi  Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv-super.dts
 	$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs
 
-.PHONY: Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb
-Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv.dtb: Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv.dtb
+.PHONY: Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv-super.dtb
+Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv-super.dtb: Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv-super.dtb
 	cp $< $@
 
 .PHONY: Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-pinmux-p3767-dp-a03.dtsi
