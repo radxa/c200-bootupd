@@ -40,8 +40,6 @@ The embedded device tree and MB1 BCT Pinmux have been updated to support those f
 
 Please check [the official NVIDIA build guide](https://github.com/NVIDIA/edk2-nvidia/wiki/Build-with-docker#install-docker).
 
-Additionally, the Linux kernel header should be installed on your system.
-
 NixOS users can run `nix develop` (Flake required) to have a local shell with Linux header configured.
 
 ### Build
