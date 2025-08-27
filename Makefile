@@ -9,6 +9,10 @@ PROFILE ?= Jetson
 VARIANT ?= RELEASE
 # or DEBUG
 
+# Variables for the commonly used paths.
+SRC := $(CURDIR)
+PATCHES := $(SRC)/patches
+
 BUILD_OUTPUT := c200/images/uefi_$(PROFILE)_$(VARIANT).bin
 
 ifeq ($(PROFILE), Jetson)
@@ -26,7 +30,7 @@ c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-nvidia/Silicon/NV
 	./edk2_docker init_edkrepo_conf
 	./edk2_docker edkrepo manifest-repos add nvidia https://github.com/NVIDIA/edk2-edkrepo-manifest.git main nvidia || true
 	./edk2_docker edkrepo clone c200 NVIDIA-Platforms r36.4.3
-	cd c200/edk2-nvidia && git am --keep-cr ../../patches/edk2-nvidia/*
+	cd c200/edk2-nvidia && git am --keep-cr $(PATCHES)/edk2-nvidia/*
 
 $(BUILD_OUTPUT): c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
 	cd c200 && \
@@ -78,9 +82,9 @@ distclean: clean
 Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv-super.dts: Linux_for_Tegra/source/source_sync.sh
 	cd Linux_for_Tegra/source/ && \
 	./source_sync.sh -k jetson_36.4.3
-	if [ -d patches/t23x-public-dts/$(PRODUCT) ]; then \
+	if [ -d $(PATCHES)/t23x-public-dts/$(PRODUCT) ]; then \
 		cd Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public;  \
-		git am ../../../../../../patches/t23x-public-dts/$(PRODUCT)/*; \
+		git am $(PATCHES)/t23x-public-dts/$(PRODUCT)/*; \
 	fi
 
 Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv-super.dtb: Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-dcb-p3737-0000-p3701-0000.dtsi  Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv-super.dts
