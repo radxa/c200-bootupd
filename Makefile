@@ -76,6 +76,8 @@ Linux_for_Tegra/bootloader/uefi_jetson.bin: c200/images/uefi_Jetson_$(VARIANT).b
 Linux_for_Tegra/bootloader/uefi_jetson_minimal.bin: c200/images/uefi_JetsonMinimal_$(VARIANT).bin
 	cp $< $@
 
+# The script `flash.sh` will select the dtb file configured by the file
+# jetson-orin-nano-devkit-super.conf
 flash: build Linux_for_Tegra/flash.sh
 	cd Linux_for_Tegra && \
 	sudo ./flash.sh --qspi-only -k A_cpu-bootloader jetson-orin-nano-devkit-super internal
@@ -101,6 +103,7 @@ distclean: clean
 $(DTS_PATH): Linux_for_Tegra/source/source_sync.sh
 	cd Linux_for_Tegra/source/ && \
 	./source_sync.sh -k jetson_36.4.3
+	# Apply the patches if the patch directory exists
 	if [ -d $(PATCHES)/t23x-public-dts/$(PRODUCT) ]; then \
 		cd Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public;  \
 		git am $(PATCHES)/t23x-public-dts/$(PRODUCT)/*; \
