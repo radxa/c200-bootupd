@@ -9,6 +9,25 @@ PROFILE ?= Jetson
 VARIANT ?= RELEASE
 # or DEBUG
 
+# 0000 - Jetson Orin NX 16GB
+# 0001 - Jetson Orin NX 8GB
+# 0003 - Jetson Orin Nano 8GB
+# 0004 - Jetson Orin Nano 4GB
+# 0005 - Jetson Orin Nano 8GB with SD card slot
+# See https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/index.html#devices-supported-by-this-document
+BOARDSKU ?= 0001
+
+# After compiling the modified dts file, the dtb file will appear under
+# `Linux_for_Tegra/source/kernel-devicetree/generic-dts/`, we need to put the
+# dtb file under `Linux_for_Tegra/kernel/dtb/` where it will get picked up by
+# the `flash.sh` script.
+# See https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/HR/JetsonModuleAdaptationAndBringUp/JetsonOrinNxNanoSeries.html#updating-dtb-files
+DTS_FILE   := tegra234-p3768-0000+p3767-$(BOARDSKU)-nv-super.dts
+DTS_PATH   := Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/$(DTS_FILE)
+DTB_FILE   := $(DTS_FILE:%.dts=%.dtb)
+DTB_OUTPUT := Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/$(DTB_FILE)
+DTB_DEST   := Linux_for_Tegra/kernel/dtb/$(DTB_FILE)
+
 # Variables for the commonly used paths.
 SRC := $(CURDIR)
 PATCHES := $(SRC)/patches
@@ -38,8 +57,8 @@ $(BUILD_OUTPUT): c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-
 		--init-defconfig edk2-nvidia/Platform/NVIDIA/$(PROFILE)/Jetson.defconfig
 
 build: $(BUILD_OUTPUT) \
+$(DTB_DEST) \
 Linux_for_Tegra/bootloader/$(BOOTLOADER) \
-Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv-super.dtb \
 Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-pinmux-p3767-dp-a03.dtsi \
 Linux_for_Tegra/bootloader/tegra234-mb1-bct-gpio-p3767-dp-a03.dtsi \
 Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi
@@ -79,7 +98,7 @@ distclean: clean
 	./edk2_docker edkrepo manifest-repos remove nvidia
 	rm -rf c200/ Linux_for_Tegra Jetson_Linux_R36.4.3_aarch64.tbz2
 
-Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv-super.dts: Linux_for_Tegra/source/source_sync.sh
+$(DTS_PATH): Linux_for_Tegra/source/source_sync.sh
 	cd Linux_for_Tegra/source/ && \
 	./source_sync.sh -k jetson_36.4.3
 	if [ -d $(PATCHES)/t23x-public-dts/$(PRODUCT) ]; then \
@@ -87,11 +106,11 @@ Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768
 		git am $(PATCHES)/t23x-public-dts/$(PRODUCT)/*; \
 	fi
 
-Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv-super.dtb: Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-dcb-p3737-0000-p3701-0000.dtsi  Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-p3768-0000+p3767-0005-nv-super.dts
+$(DTB_OUTPUT): $(DTS_PATH) Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-dcb-p3737-0000-p3701-0000.dtsi
 	$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs
 
-.PHONY: Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv-super.dtb
-Linux_for_Tegra/kernel/dtb/tegra234-p3768-0000+p3767-0005-nv-super.dtb: Linux_for_Tegra/source/kernel-devicetree/generic-dts/dtbs/tegra234-p3768-0000+p3767-0005-nv-super.dtb
+.PHONY: $(DTB_DEST)
+$(DTB_DEST): $(DTB_OUTPUT)
 	cp $< $@
 
 .PHONY: Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-pinmux-p3767-dp-a03.dtsi
