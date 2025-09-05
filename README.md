@@ -11,9 +11,9 @@ When using the official SD card image, the custom EDK2 will try finding the firs
 
 ## Background
 
-### Radxa Orin C200
+### Radxa C200
 
-NVIDIA Jetson Orin Nano Developer Kit (NDK) has the following hardware difference when compared to Radxa Orin C200:
+NVIDIA Jetson Orin Nano Developer Kit (NDK) has the following hardware difference when compared to Radxa C200:
 
 * NDK contains microSD slot on the module, while C200 uses production module with doesn't have this part populated.
 
@@ -25,7 +25,7 @@ This means the following changes are required to boot unmodified NVIDIA SD card 
 
 ### Radxa Airbox Orin
 
-Radxa Airbox Orin has some additional changes compared to Radxa Orin C200:
+Radxa Airbox Orin has some additional changes compared to Radxa C200:
 
 * USB 3.0 hub is gone. Both USB 3.0 Type-A ports are connected directly to the module.
 * GPIO01, GPIO04, and GPIO11 are connected to a RGB LED.
