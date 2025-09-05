@@ -1,0 +1,99 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Zhaoming Luo <luozhaoming@radxa.com>
+Date: Fri, 5 Sep 2025 10:48:43 +0800
+Subject: [PATCH 5/5] t23x: airbox-orin: support Jetson Orin NX 8G
+
+This change modifies the device tree of the Jetson Orin NX 8G module, so
+the module can be used with the Radxa Airbox Orin carrier board. The
+*0001-nv-super is modified because 0001 is the BOARDSKU of Jetson Orin
+NX 8G module[0], and jetson-orin-nano-devkit-super is used in the flash
+stage[1], so the 'super' DTB file will be flashed to the firmware.
+
+[0]: https://docs.nvidia.com/jetson/archives/r38.2/DeveloperGuide/index.html#devices-supported-by-this-document
+[1]: https://github.com/radxa/c200-bootupd/blob/1b846a615fcd15f82efa7e50218ae0a024cabdf8/Makefile#L83
+
+Signed-off-by: Zhaoming Luo <luozhaoming@radxa.com>
+---
+ ...egra234-p3768-0000+p3767-0001-nv-super.dts | 68 ++++++++++++++++++-
+ 1 file changed, 67 insertions(+), 1 deletion(-)
+
+diff --git a/nv-platform/tegra234-p3768-0000+p3767-0001-nv-super.dts b/nv-platform/tegra234-p3768-0000+p3767-0001-nv-super.dts
+index 6ebdca5..7c9435b 100644
+--- a/nv-platform/tegra234-p3768-0000+p3767-0001-nv-super.dts
++++ b/nv-platform/tegra234-p3768-0000+p3767-0001-nv-super.dts
+@@ -7,5 +7,71 @@
+ 
+ / {
+ 	compatible = "nvidia,p3768-0000+p3767-0001-super", "nvidia,p3767-0001", "nvidia,tegra234";
+-	model = "NVIDIA Jetson Orin NX Engineering Reference Developer Kit Super";
++	model = "Radxa Airbox Orin";
++
++	bus@0 {
++		padctl@3520000 {
++			pads {
++				usb3 {
++					lanes {
++						usb3-2 {
++							nvidia,function = "xusb";
++							status = "okay";
++						};
++					};
++				};
++			};
++			ports {
++				usb3-2 {
++					nvidia,usb2-companion = <2>;
++					status = "okay";
++				};
++			};
++		};
++
++		usb@3610000 {
++			phys = <&{/bus@0/padctl@3520000/pads/usb2/lanes/usb2-0}>,
++			       <&{/bus@0/padctl@3520000/pads/usb2/lanes/usb2-1}>,
++			       <&{/bus@0/padctl@3520000/pads/usb2/lanes/usb2-2}>,
++			       <&{/bus@0/padctl@3520000/pads/usb3/lanes/usb3-0}>,
++			       <&{/bus@0/padctl@3520000/pads/usb3/lanes/usb3-1}>,
++			       <&{/bus@0/padctl@3520000/pads/usb3/lanes/usb3-2}>;
++			phy-names = "usb2-0", "usb2-1", "usb2-2", "usb3-0",
++				    "usb3-1", "usb3-2";
++		};
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++
++		power-led {		// Blue
++			gpios = <&gpio_aon TEGRA234_AON_GPIO(CC, 1) GPIO_ACTIVE_HIGH>; // GPIO04
++			linux,default-trigger = "default-on";
++		};
++
++		status-led {	// Green
++			gpios = <&gpio TEGRA234_MAIN_GPIO(Q, 5) GPIO_ACTIVE_HIGH>; // GPIO01
++			linux,default-trigger = "heartbeat";
++		};
++
++		user-led {		// Red
++			gpios = <&gpio TEGRA234_MAIN_GPIO(Q, 6) GPIO_ACTIVE_HIGH>; // GPIO11
++			linux,default-trigger = "none";
++		};
++	};
++
++	vdd-usb-audio {
++		compatible = "regulator-fixed";
++		regulator-name = "vdd_usb_audio";
++		gpio = <&gpio TEGRA234_MAIN_GPIO(AC, 6) GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		regulator-always-on;
++		vin-supply = <&vdd_5v0_sys>;
++	};
++
++	analog-amplifier {
++		compatible = "simple-audio-amplifier";
++		VCC-supply = <&vdd_5v0_sys>;
++		enable-gpios = <&gpio TEGRA234_MAIN_GPIO(H, 0) GPIO_ACTIVE_HIGH>;
++	};
+ };
+-- 
+2.47.2
+
