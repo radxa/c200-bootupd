@@ -1,21 +1,21 @@
 .PHONY: all build flash flash_spi clean distclean
 
-PRODUCT ?= c200
-# or airbox-orin
+PRODUCT ?= $(error Please define PRODUCT)
+# c200 or airbox-orin
 
-PROFILE ?= Jetson
-# or JetsonMinimal
-
-VARIANT ?= RELEASE
-# or DEBUG
-
+BOARDSKU ?= $(error Please define BOARDSKU)
 # 0000 - Jetson Orin NX 16GB
 # 0001 - Jetson Orin NX 8GB
 # 0003 - Jetson Orin Nano 8GB
 # 0004 - Jetson Orin Nano 4GB
 # 0005 - Jetson Orin Nano 8GB with SD card slot
 # See https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/index.html#devices-supported-by-this-document
-BOARDSKU ?= 0001
+
+PROFILE ?= Jetson
+# or JetsonMinimal
+
+VARIANT ?= RELEASE
+# or DEBUG
 
 # After compiling the modified dts file, the dtb file will appear under
 # `Linux_for_Tegra/source/kernel-devicetree/generic-dts/`, we need to put the
@@ -32,7 +32,7 @@ DTB_DEST   := Linux_for_Tegra/kernel/dtb/$(DTB_FILE)
 SRC := $(CURDIR)
 PATCHES := $(SRC)/patches
 
-BUILD_OUTPUT := c200/images/uefi_$(PROFILE)_$(VARIANT).bin
+BUILD_OUTPUT := $(PRODUCT)/images/uefi_$(PROFILE)_$(VARIANT).bin
 
 ifeq ($(PROFILE), Jetson)
 BOOTLOADER := uefi_jetson.bin
@@ -44,15 +44,15 @@ endif
 
 all: build
 
-c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c &:
-	rm -rf c200
+$(PRODUCT)/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh $(PRODUCT)/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c &:
+	rm -rf $(PRODUCT)
 	./edk2_docker init_edkrepo_conf
 	./edk2_docker edkrepo manifest-repos add nvidia https://github.com/NVIDIA/edk2-edkrepo-manifest.git main nvidia || true
-	./edk2_docker edkrepo clone c200 NVIDIA-Platforms r36.4.3
-	cd c200/edk2-nvidia && git am --keep-cr $(PATCHES)/edk2-nvidia/*
+	./edk2_docker edkrepo clone $(PRODUCT) NVIDIA-Platforms r36.4.3
+	cd $(PRODUCT)/edk2-nvidia && git am --keep-cr $(PATCHES)/edk2-nvidia/*
 
-$(BUILD_OUTPUT): c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
-	cd c200 && \
+$(BUILD_OUTPUT): $(PRODUCT)/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh $(PRODUCT)/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
+	cd $(PRODUCT) && \
 	../edk2_docker edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh \
 		--init-defconfig edk2-nvidia/Platform/NVIDIA/$(PROFILE)/Jetson.defconfig
 
@@ -70,10 +70,10 @@ Linux_for_Tegra/flash.sh Linux_for_Tegra/source/source_sync.sh &: Jetson_Linux_R
 	tar xmf $<
 
 .PHONY: Linux_for_Tegra/bootloader/uefi_jetson.bin
-Linux_for_Tegra/bootloader/uefi_jetson.bin: c200/images/uefi_Jetson_$(VARIANT).bin
+Linux_for_Tegra/bootloader/uefi_jetson.bin: $(PRODUCT)/images/uefi_Jetson_$(VARIANT).bin
 	cp $< $@
 
-Linux_for_Tegra/bootloader/uefi_jetson_minimal.bin: c200/images/uefi_JetsonMinimal_$(VARIANT).bin
+Linux_for_Tegra/bootloader/uefi_jetson_minimal.bin: $(PRODUCT)/images/uefi_JetsonMinimal_$(VARIANT).bin
 	cp $< $@
 
 # The script `flash.sh` will select the dtb file configured by the file
@@ -91,14 +91,14 @@ flash_spi: build Linux_for_Tegra/flash.sh
 	sudo ./flash.sh p3768-0000-p3767-0000-a0-qspi internal
 
 clean:
-	rm -f c200/images/uefi_Jetson*_*.bin
+	rm -f $(PRODUCT)/images/uefi_Jetson*_*.bin
 	[ -e Linux_for_Tegra/source/Makefile ] && \
 		$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs-clean
 
 distclean: clean
 	./edk2_docker edkrepo clean
 	./edk2_docker edkrepo manifest-repos remove nvidia
-	rm -rf c200/ Linux_for_Tegra Jetson_Linux_R36.4.3_aarch64.tbz2
+	rm -rf $(PRODUCT)/ Linux_for_Tegra Jetson_Linux_R36.4.3_aarch64.tbz2
 
 $(DTS_PATH): Linux_for_Tegra/source/source_sync.sh
 	cd Linux_for_Tegra/source/ && \

@@ -44,6 +44,33 @@ Additionally, the Linux kernel header should be installed on your system.
 
 NixOS users can run `nix develop` (Flake required) to have a local shell with Linux header configured.
 
+
+### Configuration
+
+Users need to define the following variables before building:
+
+`PRODUCT` refers to the carrier board, which should be one of the following:
+- `c200`
+- `airbox-orin`
+
+`BOARDSKU` refers to the module number, which should be one of the following:
+- `0000`
+- `0001`
+- `0003`
+- `0004`
+- `0005`
+
+The meanings of the possible values of `BOARDSKU`:
+```
+0000 - Jetson Orin NX 16GB
+0001 - Jetson Orin NX 8GB
+0003 - Jetson Orin Nano 8GB
+0004 - Jetson Orin Nano 4GB
+0005 - Jetson Orin Nano 8GB with SD card slot
+```
+
+For more information, see the [Nvidia Developer Guide](https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/index.html#devices-supported-by-this-document).
+
 ### Build
 
 Please run following commands:
@@ -52,7 +79,7 @@ Please run following commands:
 make build
 ```
 
-The generated binary is located under `c200/images/uefi_Jetson_RELEASE.bin`.
+The generated binary is located under `$(PRODUCT)/images/uefi_Jetson_RELEASE.bin`.
 
 ### Flash
 
@@ -64,8 +91,6 @@ make flash
 
 # Pinmux needs to be updated for Airbox Orin's status LED
 make flash_bct
-
-# Other products can be specified with PRODUCT variable
 ```
 
 If you want to update the entire SPI flash, please run:
