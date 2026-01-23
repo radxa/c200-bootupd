@@ -41,7 +41,7 @@ The embedded device tree and MB1 BCT Pinmux have been updated to support those f
 Please first boot the device to [force recovery mode](https://developer.nvidia.com/embedded/learn/jetson-agx-orin-devkit-user-guide/howto.html#force-recovery-mode), then run following commands:
 
 ```bash
-wget https://developer.download.nvidia.com/embedded/L4T/r36_Release_v4.3/release/Jetson_Linux_R36.4.3_aarch64.tbz2 -O Jetson_Linux_aarch64.tbz2
+wget https://developer.download.nvidia.com/embedded/L4T/r36_Release_v4.4/release/Jetson_Linux_R36.4.4_aarch64.tbz2 -O Jetson_Linux_aarch64.tbz2
 tar -xf Jetson_Linux_aarch64.tbz2
 cd Linux_for_Tegra
 # For Radxa C200 Orin Developer Kit:
