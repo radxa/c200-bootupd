@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Thu, 9 Apr 2026 18:36:58 +0800
+Subject: [PATCH] fix: force virtualenv to use regular path for activate
+
+https://askubuntu.com/q/1406304
+
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
+---
+ Silicon/NVIDIA/scripts/prepare_stuart.sh | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Silicon/NVIDIA/scripts/prepare_stuart.sh b/Silicon/NVIDIA/scripts/prepare_stuart.sh
+index 38ef048d..a54e44dc 100755
+--- a/Silicon/NVIDIA/scripts/prepare_stuart.sh
++++ b/Silicon/NVIDIA/scripts/prepare_stuart.sh
+@@ -23,6 +23,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+ 
+ 
+ # Create a python virtual env, if we haven't already.
++export DEB_PYTHON_INSTALL_LAYOUT='deb'
+ if [ ! -e venv/bin/activate ]; then
+   _msg "Creating Python virtual environment in `pwd`/venv..."
+   virtualenv -p python3 venv
+-- 
+2.51.2
+
