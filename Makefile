@@ -94,13 +94,15 @@ flash_spi: build Linux_for_Tegra/flash.sh
 
 clean:
 	rm -f c200/images/uefi_Jetson*_*.bin
-	[ -e Linux_for_Tegra/source/Makefile ] && \
-		$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs-clean
+	if [ -e Linux_for_Tegra/source/Makefile ]; then \
+		$(MAKE) -C Linux_for_Tegra/source nvidia-dtbs-clean; \
+	fi
 
 distclean: clean
-	cd c200 && ./../edk2_docker edkrepo clean
+	cd c200 && ./../edk2_docker edkrepo clean || true
 	./edk2_docker edkrepo manifest-repos remove nvidia
-	rm -rf c200/ Linux_for_Tegra Jetson_Linux_R$(RELEASE)_aarch64.tbz2
+	rm -rf c200/ Jetson_Linux_R$(RELEASE)_aarch64.tbz2
+	sudo rm -rf Linux_for_Tegra
 
 $(DTS_PATH): Linux_for_Tegra/source/source_sync.sh
 	cd Linux_for_Tegra/source/ && \
