@@ -1,9 +1,18 @@
 #!/usr/bin/env sh
 
-# Based on https://github.com/NVIDIA/edk2-nvidia/wiki/Build-with-docker#configure-docker
+export LOCAL_IMAGE="${LOCAL_IMAGE:-false}"
 
-# Point to the Ubuntu-22 dev image
-export EDK2_DEV_IMAGE="ghcr.io/tianocore/containers/ubuntu-22-dev:latest"
+# Based on https://github.com/NVIDIA/edk2-nvidia/wiki/Build-with-docker#configure-docker
+if [[ $LOCAL_IMAGE == "true" ]]; then
+    SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+    cp "$SCRIPT_DIR/edkrepo/Ubuntu-22/init_edkrepo_conf.sh" "$SCRIPT_DIR/container/"
+    export EDK2_DEV_IMAGE="ubuntu-24-dev:latest"
+
+    docker build -t "$EDK2_DEV_IMAGE" "$SCRIPT_DIR/container/"
+else
+    # Point to the Ubuntu-22 dev image
+    export EDK2_DEV_IMAGE="ghcr.io/tianocore/containers/ubuntu-22-dev:latest"
+fi
 
 # Required
 export EDK2_USER_ARGS="-v ${HOME}:${HOME} -e EDK2_DOCKER_USER_HOME=${HOME}"

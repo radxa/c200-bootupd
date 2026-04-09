@@ -1,0 +1,4 @@
+[submodule "edkrepo"]
+	path = edkrepo
+	url = https://github.com/tianocore/containers.git
+	branch = main
