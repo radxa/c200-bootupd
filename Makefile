@@ -3,8 +3,8 @@
 PRODUCT ?= c200
 # or airbox-orin
 
-PROFILE ?= Jetson
-# or JetsonMinimal
+PROFILE ?= general
+# or embedded
 
 VARIANT ?= RELEASE
 # or DEBUG
@@ -17,7 +17,7 @@ VARIANT ?= RELEASE
 # See https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/index.html#devices-supported-by-this-document
 BOARDSKU ?= 0001
 
-RELEASE := 36.4.4
+RELEASE := 36.5.0
 
 # After compiling the modified dts file, the dtb file will appear under
 # `Linux_for_Tegra/source/kernel-devicetree/generic-dts/`, we need to put the
@@ -34,11 +34,11 @@ DTB_DEST   := Linux_for_Tegra/kernel/dtb/$(DTB_FILE)
 SRC := $(CURDIR)
 PATCHES := $(SRC)/patches
 
-BUILD_OUTPUT := c200/images/uefi_$(PROFILE)_$(VARIANT).bin
+BUILD_OUTPUT := c200/images/uefi_t23x_$(PROFILE)_$(VARIANT).bin
 
-ifeq ($(PROFILE), Jetson)
+ifeq ($(PROFILE), general)
 BOOTLOADER := uefi_jetson.bin
-else ifeq ($(PROFILE), JetsonMinimal)
+else ifeq ($(PROFILE), embedded)
 BOOTLOADER := uefi_jetson_minimal.bin
 else
 $(error Unrecognized PROFILE "$(PROFILE)")
@@ -46,17 +46,17 @@ endif
 
 all: build
 
-c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c &:
+c200/edk2-nvidia/Platform/NVIDIA/Tegra/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c &:
 	rm -rf c200
 	./edk2_docker init_edkrepo_conf
 	./edk2_docker edkrepo manifest-repos add nvidia https://github.com/NVIDIA/edk2-edkrepo-manifest.git main nvidia || true
-	./edk2_docker edkrepo clone c200 NVIDIA-Platforms r$(RELEASE)
+	./edk2_docker edkrepo clone c200 NVIDIA-Platforms r36.5-updates
 	cd c200/edk2-nvidia && git am --keep-cr $(PATCHES)/edk2-nvidia/*
 
-$(BUILD_OUTPUT): c200/edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
+$(BUILD_OUTPUT): c200/edk2-nvidia/Platform/NVIDIA/Tegra/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
 	cd c200 && \
-	../edk2_docker edk2-nvidia/Platform/NVIDIA/$(PROFILE)/build.sh \
-		--init-defconfig edk2-nvidia/Platform/NVIDIA/$(PROFILE)/Jetson.defconfig
+	../edk2_docker edk2-nvidia/Platform/NVIDIA/Tegra/build.sh \
+		--init-defconfig edk2-nvidia/Platform/NVIDIA/Tegra/DefConfigs/t23x_$(PROFILE).defconfig
 
 build: $(BUILD_OUTPUT) \
 $(DTB_DEST) \
@@ -65,17 +65,17 @@ Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-pinmux-p3767-dp-a03.dtsi
 Linux_for_Tegra/bootloader/tegra234-mb1-bct-gpio-p3767-dp-a03.dtsi \
 Linux_for_Tegra/bootloader/generic/BCT/tegra234-mb1-bct-padvoltage-p3767-dp-a03.dtsi
 
-Jetson_Linux_R$(RELEASE)_aarch64.tbz2:
-	wget https://developer.download.nvidia.com/embedded/L4T/r36_Release_v4.4/release/$@
+Jetson_Linux_r$(RELEASE)_aarch64.tbz2:
+	wget https://developer.nvidia.com/downloads/embedded/l4t/r36_release_v5.0/release/$@
 
-Linux_for_Tegra/flash.sh Linux_for_Tegra/source/source_sync.sh &: Jetson_Linux_R$(RELEASE)_aarch64.tbz2
+Linux_for_Tegra/flash.sh Linux_for_Tegra/source/source_sync.sh &: Jetson_Linux_r$(RELEASE)_aarch64.tbz2
 	tar xmf $<
 
 .PHONY: Linux_for_Tegra/bootloader/uefi_jetson.bin
-Linux_for_Tegra/bootloader/uefi_jetson.bin: c200/images/uefi_Jetson_$(VARIANT).bin
+Linux_for_Tegra/bootloader/uefi_jetson.bin: c200/images/uefi_t23x_general_$(VARIANT).bin
 	cp $< $@
 
-Linux_for_Tegra/bootloader/uefi_jetson_minimal.bin: c200/images/uefi_JetsonMinimal_$(VARIANT).bin
+Linux_for_Tegra/bootloader/uefi_jetson_minimal.bin: c200/images/uefi_t23x_embedded_$(VARIANT).bin
 	cp $< $@
 
 # The script `flash.sh` will select the dtb file configured by the file
@@ -101,12 +101,12 @@ clean:
 distclean: clean
 	cd c200 && ./../edk2_docker edkrepo clean || true
 	./edk2_docker edkrepo manifest-repos remove nvidia
-	rm -rf c200/ Jetson_Linux_R$(RELEASE)_aarch64.tbz2
+	rm -rf c200/ Jetson_Linux_r$(RELEASE)_aarch64.tbz2
 	sudo rm -rf Linux_for_Tegra
 
 $(DTS_PATH): Linux_for_Tegra/source/source_sync.sh
 	cd Linux_for_Tegra/source/ && \
-	./source_sync.sh -k jetson_$(RELEASE)
+	./source_sync.sh -s -t jetson_36.5
 	# Apply the patches if the patch directory exists
 	if [ -d $(PATCHES)/t23x-public-dts/$(PRODUCT) ]; then \
 		cd Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public;  \
