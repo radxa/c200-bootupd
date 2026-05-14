@@ -16,12 +16,12 @@ index 38ef048d..a54e44dc 100755
 +++ b/Silicon/NVIDIA/scripts/prepare_stuart.sh
 @@ -23,6 +23,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
  
- 
- # Create a python virtual env, if we haven't already.
-+export DEB_PYTHON_INSTALL_LAYOUT='deb'
- if [ ! -e venv/bin/activate ]; then
-   _msg "Creating Python virtual environment in `pwd`/venv..."
-   virtualenv -p python3 venv
+ if [[ -z "${UEFI_SKIP_VENV}" ]]; then
+   # Create a python virtual env, if we haven't already.
++  export DEB_PYTHON_INSTALL_LAYOUT='deb'
+   find_venv_activate
+   if [ ! -e ${VENV_ACTIVATE} ]; then
+     _msg "Creating Python virtual environment in `pwd`/venv..."
 -- 
 2.51.2
 

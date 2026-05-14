@@ -50,7 +50,7 @@ c200/edk2-nvidia/Platform/NVIDIA/Tegra/build.sh c200/edk2-nvidia/Silicon/NVIDIA/
 	rm -rf c200
 	./edk2_docker init_edkrepo_conf
 	./edk2_docker edkrepo manifest-repos add nvidia https://github.com/NVIDIA/edk2-edkrepo-manifest.git main nvidia || true
-	./edk2_docker edkrepo clone c200 NVIDIA-Platforms r36.5-updates
+	./edk2_docker edkrepo clone --sparse c200 NVIDIA-Platforms r36.5-updates
 	cd c200/edk2-nvidia && git am --keep-cr --reject --whitespace=fix $(PATCHES)/edk2-nvidia/*.patch
 
 $(BUILD_OUTPUT): c200/edk2-nvidia/Platform/NVIDIA/Tegra/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c

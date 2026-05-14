@@ -24,9 +24,9 @@ index aebc3622..aa63efa3 100644
 --- a/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
 +++ b/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
 @@ -21,9 +21,12 @@
- #include <Protocol/PciIo.h>
- #include <Protocol/KernelCmdLineUpdate.h>
  #include <Protocol/AndroidBootImg.h>
+ #include <Protocol/KernelArgsProtocol.h>
+ #include <Protocol/PlatformKernelArgsProtocol.h>
 +#include <Protocol/PartitionInfo.h>
  
  #include <NVIDIAConfiguration.h>
@@ -177,8 +177,8 @@ index aebc3622..aa63efa3 100644
 +  }
 +
    *OutCmdLine = CmdLine;
-   return EFI_SUCCESS;
- }
+   Status      = EFI_SUCCESS;
+ 
 diff --git a/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.inf b/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.inf
 index eb627388..4a2316f9 100644
 --- a/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.inf
@@ -193,9 +193,9 @@ index eb627388..4a2316f9 100644
  [Packages]
    MdeModulePkg/MdeModulePkg.dec
 @@ -39,6 +41,8 @@
-   gEfiFirmwareVolume2ProtocolGuid
-   gEdkiiPlatformBootManagerProtocolGuid
    gAndroidBootImgProtocolGuid
+   gNVIDIALoadfileKernelArgsProtocol
+   gNVIDIAPlatformKernelArgsProtocolGuid
 +  gEfiPartitionInfoProtocolGuid
 +  gEfiDiskIoProtocolGuid
  
