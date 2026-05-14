@@ -51,7 +51,7 @@ c200/edk2-nvidia/Platform/NVIDIA/Tegra/build.sh c200/edk2-nvidia/Silicon/NVIDIA/
 	./edk2_docker init_edkrepo_conf
 	./edk2_docker edkrepo manifest-repos add nvidia https://github.com/NVIDIA/edk2-edkrepo-manifest.git main nvidia || true
 	./edk2_docker edkrepo clone c200 NVIDIA-Platforms r36.5-updates
-	cd c200/edk2-nvidia && git am --keep-cr $(PATCHES)/edk2-nvidia/*
+	cd c200/edk2-nvidia && git am --keep-cr --reject --whitespace=fix $(PATCHES)/edk2-nvidia/*.patch
 
 $(BUILD_OUTPUT): c200/edk2-nvidia/Platform/NVIDIA/Tegra/build.sh c200/edk2-nvidia/Silicon/NVIDIA/Drivers/TegraPlatformBootManager/TegraPlatformBootManagerDxe.c
 	cd c200 && \
@@ -110,7 +110,7 @@ $(DTS_PATH): Linux_for_Tegra/source/source_sync.sh
 	# Apply the patches if the patch directory exists
 	if [ -d $(PATCHES)/t23x-public-dts/$(PRODUCT) ]; then \
 		cd Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public;  \
-		git am $(PATCHES)/t23x-public-dts/$(PRODUCT)/*; \
+		git am --reject --whitespace=fix $(PATCHES)/t23x-public-dts/$(PRODUCT)/*.patch; \
 	fi
 
 $(DTB_OUTPUT): $(DTS_PATH) Linux_for_Tegra/source/hardware/nvidia/t23x/nv-public/nv-platform/tegra234-dcb-p3737-0000-p3701-0000.dtsi
